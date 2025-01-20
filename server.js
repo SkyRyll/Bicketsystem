@@ -95,25 +95,39 @@ function get_account(req, res) {
 }
 
 function show_account(req, res, user_id) {
-    let user = null;
-
-    const query = "SELECT * FROM accounts WHERE id = ?";
+    const query = "SELECT * FROM accounts WHERE account_id = ?";
     connection.query(query, [user_id], function (error, results, fields) {
         if (error) throw error;
-        if (results.length > 0) {
-            //user found
-            user = results[0];
 
-            //don't supply password hash ;)
-            delete user.password;
-            res.render("pages/account", {
-                user: user,
-                loggedin: req.session.loggedin,
+        if (results.length > 0) {
+            // User found
+            const user = results[0];
+
+            // Fetch role based on role_id
+            getRoleFromID(user.role_id, function (role) {
+                // Don't supply password hash ;)
+                delete user.hash;
+
+                res.render("pages/account", {
+                    user: user,
+                    role: role,
+                    loggedin: req.session.loggedin,
+                });
             });
         } else {
-            //invalid userID
+            // Invalid userID
             get_error(req, res, "No User was found");
         }
+    });
+}
+
+function getRoleFromID(role_id, callback) {
+    const roleQuery = "SELECT role_type FROM roles WHERE role_id = ?";
+    connection.query(roleQuery, [role_id], function (error, results) {
+        if (error) throw error;
+
+        const role = results.length > 0 ? results[0] : null;
+        callback(role);
     });
 }
 
@@ -172,7 +186,7 @@ function get_error(req, res, errorMessage) {
 app.post(
     "/login",
     [
-        check("username").trim().isLength({ min: 1 }).escape(),
+        check("email").trim().isLength({ min: 1 }).escape(),
         check("password").trim().isLength({ min: 8 }), // You might want to add more validation here
     ],
     encoder,
@@ -182,13 +196,13 @@ app.post(
         if (!errors.isEmpty()) {
             get_error(req, res, "Error while trying to log in. The provided data did not meet the requirements");
         } else {
-            var username = req.body.username;
+            var email = req.body.email;
             var password = req.body.password;
             const salt = generateSalt(password);
 
             // Retrieve 'hash' and 'salt' from the database based on the username
-            const query = "SELECT * FROM accounts WHERE username = ?";
-            connection.query(query, [username], function (error, results, fields) {
+            const query = "SELECT * FROM accounts WHERE email = ?";
+            connection.query(query, [email], function (error, results, fields) {
                 if (error) {
                     get_error(req, res, "Login failed. Please try again.");
                 }
@@ -205,8 +219,7 @@ app.post(
                         if (hash === storedHash) {
                             // Passwords match, grant access
                             req.session.loggedin = true;
-                            req.session.username = username;
-                            req.session.userID = results[0].id;
+                            req.session.userID = results[0].account_id;
 
                             // Render home page
                             get_account(req, res);
@@ -229,9 +242,13 @@ app.post(
     "/register",
     [
         check("email").isEmail().normalizeEmail(),
-        check("firstname").trim().isLength({ min: 1 }).escape(),
-        check("lastname").trim().isLength({ min: 1 }).escape(),
-        check("username").trim().isLength({ min: 1 }).escape(),
+        check("first_name").trim().isLength({ min: 1 }).escape(),
+        check("last_name").trim().isLength({ min: 1 }).escape(),
+        check("street").trim().isLength({ min: 1 }).escape(),
+        check("house_number").isInt({ gt: 0 }).withMessage("House number must be a positive integer."),
+        check("zip_code").isInt({ gt: 0 }).withMessage("ZIP Code must be a positive integer."),
+        check("city").trim().isLength({ min: 1 }).escape(),
+        check("role").trim().isIn(["teacher", "room_attendant"]).withMessage("Role must be either teacher or room attendant"),
         check("password").custom((value) => {
             // Use a regular expression to validate the password
             const passwordRegex = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])(?=.{8,})/;
@@ -246,52 +263,49 @@ app.post(
         const errors = validationResult(req);
 
         if (!errors.isEmpty()) {
-            get_error(req, res, "Error while trying to create user. The provided data did not meet the requirements");
+            get_error(req, res, "Error while trying to create user. The provided data did not meet the requirements.");
         } else {
             var email = req.body.email;
-            var firstname = req.body.firstname;
-            var lastname = req.body.lastname;
-            var username = req.body.username;
+            var first_name = req.body.first_name;
+            var last_name = req.body.last_name;
             var password = req.body.password;
+            var street = req.body.street;
+            var house_number = req.body.house_number;
+            var zip_code = req.body.zip_code;
+            var city = req.body.city;
+            var role_id = req.body.role === "teacher" ? 1 : 2;
             const salt = generateSalt(password);
 
             bcrypt.hash(password, salt, function (err, hash) {
                 if (err) {
-                    // Error while hashing, user wont be created
-                    get_error(req, res, "Error while trying to create user. Please try again");
+                    // Error while hashing, user won't be created
+                    get_error(req, res, "Error while trying to create user. Please try again.");
                 }
 
-                const query = "SELECT * FROM accounts WHERE username = ?";
-                connection.query(query, [username], function (error, results, fields) {
+                const query = "SELECT * FROM accounts WHERE email = ?";
+                connection.query(query, [email], function (error, results, fields) {
                     // If there is an issue with the query, output the error
                     if (error) throw error;
                     // If the account exists
                     if (results.length > 0) {
-                        //user already exists, skip login
-                        get_error(req, res, "This username is already taken");
+                        // User already exists, skip registration
+                        get_error(req, res, "This email is already in use.");
                     } else {
-                        const query = "SELECT * FROM accounts WHERE email = ?";
-                        connection.query(query, [email], function (error, results, fields) {
+                        const query = `
+                                    INSERT INTO accounts (
+                                        email, first_name, last_name, hash,
+                                        street, house_number, zip_code, city, role_id
+                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                `;
+                        connection.query(query, [email, first_name, last_name, hash, street, house_number, zip_code, city, role_id], function (error, results, fields) {
                             // If there is an issue with the query, output the error
                             if (error) throw error;
-                            // If the account exists
-                            if (results.length > 0) {
-                                //user already exists, skip login
-                                get_error(req, res, "This email is already in use");
-                            } else {
-                                const query = "INSERT INTO accounts (email, firstname, lastname, username, hash) VALUES (?,?,?,?,?)";
-                                connection.query(query, [email, firstname, lastname, username, hash], function (error, results, fields) {
-                                    // If there is an issue with the query, output the error
-                                    if (error) throw error;
-                                    // account added
-                                    req.session.loggedin = true;
-                                    req.session.username = username;
-                                    req.session.userID = results.insertId;
+                            // Account added
+                            req.session.loggedin = true;
+                            req.session.userID = results.insertId;
 
-                                    // render home page
-                                    res.redirect("/account");
-                                });
-                            }
+                            // Redirect to account page
+                            res.redirect("/account");
                         });
                     }
                 });
@@ -306,6 +320,5 @@ function generateSalt(password) {
     const secondHalf = password.slice(5, 8);
 
     const salt = temp + md5(firstHalf + secondHalf).slice(8, 30);
-    console.log(salt);
     return salt;
 }

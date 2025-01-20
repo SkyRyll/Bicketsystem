@@ -109,3 +109,46 @@
 .password-rules-text {
     color: #ef3b3a;
 }
+
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #333;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+select:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+    outline: none;
+}
+
+select option {
+    padding: 10px;
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #333;
+}
+
+select::-ms-expand {
+    display: none;
+}
+
+select::after {
+    content: " ▼";
+    font-size: 12px;
+    color: #333;
+}

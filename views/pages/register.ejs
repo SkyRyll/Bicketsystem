@@ -23,12 +23,21 @@
         <div class="login-page">
             <div class="form">
                 <form class="register-form" action="" method="POST">
-                    <input type="email" placeholder="email address" name="email" required />
-                    <input type="text" placeholder="first name" name="firstname" required />
-                    <input type="text" placeholder="last name" name="lastname" required />
-                    <input type="text" placeholder="username" name="username" required />
-                    <input type="password" placeholder="password" name="password" id="password" required />
+                    <input type="email" placeholder="Email address" name="email" required />
+                    <input type="text" placeholder="First name" name="first_name" required />
+                    <input type="text" placeholder="Last name" name="last_name" required />
+                    <input type="password" placeholder="Password" name="password" id="password" required />
                     <div class="password-rules" id="password-rules" style="color: red"></div>
+                    <input type="text" placeholder="Street" name="street" required />
+                    <input type="text" placeholder="House number" name="house_number" required />
+                    <input type="text" placeholder="ZIP Code" name="zip_code" required />
+                    <input type="text" placeholder="City" name="city" required />
+                    <select name="role" required>
+                        <option value="" disabled selected>Select role</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="room_attendant">Room Attendant</option>
+                    </select>
+
                     <button>create account</button>
                     <p class="message">Already registered? <a href="/login">Sign In</a></p>
                 </form>
