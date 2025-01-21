@@ -109,8 +109,8 @@ function fetchTickets() {
     fetch(apiUrl)
         .then((response) => response.json())
         .then((data) => {
-            allTickets = data; // Save all tickets in a global array
-            displayTickets(allTickets); // Display all tickets initially
+            allTickets = data;
+            displayTickets(allTickets);
         })
         .catch((error) => {
             console.error("Error fetching tickets:", error);
@@ -118,36 +118,75 @@ function fetchTickets() {
             ticketList.innerHTML = "<p>Error loading tickets.</p>";
         });
 }
-
-// Function to display tickets based on the passed array
+// Function to display tickets in a table format
 function displayTickets(tickets) {
     const ticketList = document.getElementById("ticketList");
-    ticketList.innerHTML = ""; // Clear previous tickets
+    ticketList.innerHTML = "";
 
     if (tickets.length === 0) {
         ticketList.innerHTML = "<p>No tickets found.</p>";
         return;
     }
 
-    // Display tickets
+    // Create table and headers
+    const table = document.createElement("table");
+    table.classList.add("custom-table"); // Use a custom class for styling
+
+    const thead = document.createElement("thead");
+    thead.innerHTML = `
+        <tr>
+            <th>Title & Date</th>
+            <th>Description</th>
+            <th>Status</th>
+        </tr>
+    `;
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+
+    // Populate table rows with ticket data
     tickets.forEach((ticket) => {
-        const ticketDiv = document.createElement("div");
-        ticketDiv.classList.add("ticket-card", "mb-3", "p-3", "border", "rounded");
+        const row = document.createElement("tr");
 
-        ticketDiv.innerHTML = `
-                    <h5 class="ticket-title">${ticket.ticket_title}</h5>
-                    <p class="ticket-description">${ticket.ticket_description}</p>
-                    <p class="ticket-date">Created on: ${new Date(ticket.creation_date).toLocaleString()}</p>
-                    <p class="ticket-status">Status: ${ticket.status_id === 1 ? "Open" : ticket.status_id === 2 ? "Closed" : "In Progress"}</p>
-                `;
+        const titleDateCell = document.createElement("td");
+        titleDateCell.innerHTML = `
+            <strong>${ticket.ticket_title}</strong><br>
+            <small>Created on: ${new Date(ticket.creation_date).toLocaleString()}</small>
+        `;
+        row.appendChild(titleDateCell);
 
-        ticketList.appendChild(ticketDiv);
+        const descriptionCell = document.createElement("td");
+        descriptionCell.textContent = ticket.ticket_description;
+        row.appendChild(descriptionCell);
+
+        const statusCell = document.createElement("td");
+        statusCell.classList.add("status-cell");
+
+        // Set the text content based on the status_id
+        if (ticket.status_id === 1) {
+            statusCell.textContent = "Open";
+            statusCell.classList.add("status-open"); // Add the "status-open" class
+        } else if (ticket.status_id === 2) {
+            statusCell.textContent = "Closed";
+            statusCell.classList.add("status-closed"); // Add the "status-closed" class
+        } else {
+            statusCell.textContent = "In Progress";
+            statusCell.classList.add("status-in-progress"); // Add the "status-in-progress" class
+        }
+
+        // Append the status cell to the row
+        row.appendChild(statusCell);
+
+        tbody.appendChild(row);
     });
+
+    table.appendChild(tbody);
+    ticketList.appendChild(table);
 }
 
 // Function to filter tickets based on user input
 function filterTickets() {
-    const ticketTitle = document.getElementById("ticketTitle").value.toLowerCase();
+    const searchbarInput = document.getElementById("searchbarInput").value.trim().toLowerCase();
     const status = document.getElementById("status").value;
     const creationDate = document.getElementById("creationDate").value;
     const sortOrder = document.getElementById("sortOrder").value;
@@ -156,7 +195,10 @@ function filterTickets() {
         let isMatch = true;
 
         // Filter by title
-        if (ticketTitle && !ticket.ticket_title.toLowerCase().includes(ticketTitle)) {
+        const ticketTitle = (ticket.ticket_title || "").trim().toLowerCase(); // Handle undefined/null ticket_title
+        console.log("ticketTitleInput:", searchbarInput);
+        console.log("ticketTitle:", ticketTitle);
+        if (searchbarInput && !ticketTitle.includes(searchbarInput)) {
             isMatch = false;
         }
 
@@ -166,8 +208,11 @@ function filterTickets() {
         }
 
         // Filter by creation date
-        if (creationDate && ticket.creation_date.substring(0, 10) !== creationDate) {
-            isMatch = false;
+        if (creationDate) {
+            const ticketDate = new Date(ticket.creation_date).toISOString().split("T")[0];
+            if (ticketDate !== creationDate) {
+                isMatch = false;
+            }
         }
 
         return isMatch;
@@ -191,6 +236,7 @@ function filterTickets() {
 document.getElementById("filterForm").addEventListener("submit", function (event) {
     event.preventDefault(); // Prevent default form submit behavior
     filterTickets(); // Apply the filters
+    console.log();
 });
 
 // Load and fetch all tickets initially

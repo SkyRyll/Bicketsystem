@@ -18,10 +18,7 @@
         <title>Ticketsystem: Overview</title>
     </head>
     <body>
-        <%- include('../components/navbar'); %>
-        <h1>Ticket Overview</h1>
-        <% if (loggedin) { %>
-        <button id="openModalBtn">Create New Ticket</button>
+        <%- include('../components/navbar'); %> <% if (loggedin) { %>
         <div id="ticketModal" class="modal">
             <div class="modal-content">
                 <span class="close" id="closeModalBtn">&times;</span>
@@ -41,15 +38,17 @@
             </div>
         </div>
         <% } %>
-        <!-- Filter Form -->
         <div class="container mt-4">
+            <button class="mb-4" id="openModalBtn">Create New Ticket</button>
             <h4>Filter Tickets</h4>
             <form id="filterForm" class="mb-4">
                 <div class="form-row">
-                    <div class="form-group col-md-4">
-                        <label for="ticketTitle">Ticket Title</label>
-                        <input type="text" class="form-control" id="ticketTitle" placeholder="Search by title" />
+                    <div class="form-group col-md-12">
+                        <label for="searchbarInput">Ticket Title</label>
+                        <input type="text" class="form-control" id="searchbarInput" placeholder="Search by title" />
                     </div>
+                </div>
+                <div class="form-row">
                     <div class="form-group col-md-4">
                         <label for="status">Status</label>
                         <select class="form-control" id="status">
@@ -66,9 +65,8 @@
                     <div class="form-group col-md-4">
                         <label for="sortOrder">Sort by Date</label>
                         <select class="form-control" id="sortOrder">
-                            <option value="">Select Sorting</option>
+                            <option value="desc" selected>Descending (Newest First)</option>
                             <option value="asc">Ascending (Oldest First)</option>
-                            <option value="desc">Descending (Newest First)</option>
                         </select>
                     </div>
                 </div>
@@ -76,10 +74,7 @@
             </form>
         </div>
 
-        <!-- Ticket List -->
-        <div id="ticketList" class="container mt-4">
-            <!-- Tickets will be dynamically added here -->
-        </div>
+        <div id="ticketList" class="container mt-4"></div>
         <script type="text/javascript" src="/scripts/ticketOverviewScript.js"></script>
     </body>
 </html>
