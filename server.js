@@ -8,6 +8,7 @@ const encoder = bodyParser.urlencoded();
 const bcrypt = require("bcrypt");
 const { check, validationResult } = require("express-validator");
 const rateLimit = require("express-rate-limit");
+const e = require("express");
 
 //VARIABLES
 const dbHost = "localhost";
@@ -27,8 +28,11 @@ app.set("view engine", "ejs");
 app.use(
     session({
         secret: "secret",
-        resave: true,
-        saveUninitialized: true,
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            maxAge: 1000 * 60 * 60 * 24, // 1 day in milliseconds
+        },
     })
 );
 app.use(express.json());
@@ -201,6 +205,36 @@ app.get("/api/getAllTickets", (req, res) => {
         if (error) throw error;
 
         res.json(results);
+    });
+});
+
+app.get("/api/getSessionUser", (req, res) => {
+    // Replace with your session management logic
+    if (req.session && req.session.userID) {
+        res.json({ userID: req.session.userID });
+    } else {
+        res.status(401).json({ error: "User not logged in." });
+    }
+});
+
+app.post("/api/createTicket", async (req, res) => {
+    const { ticketTitle, ticketDescription, roomId, userID } = req.body;
+
+    // Check if all required fields are present
+    if (!ticketTitle || !ticketDescription || !roomId || !userID) {
+        return res.status(400).json({ error: "All fields are required." });
+    }
+    // Insert the new ticket into the database
+
+    const query = `
+            INSERT INTO tickets (room_id, account_id, creation_date, ticket_title, ticket_description, status_id)
+            VALUES (?, ?, now(), ?, ?, 1)`;
+    connection.query(query, [roomId, userID, ticketTitle, ticketDescription], function (error, results, fields) {
+        if (error) {
+            throw error;
+        } else {
+            res.status(201).json({ message: "Ticket created successfully." });
+        }
     });
 });
 

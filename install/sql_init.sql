@@ -62,6 +62,11 @@ INSERT INTO `roles` (role_type) VALUES
 ("Teacher"),
 ("Room attendant");
 
+INSERT INTO `status` (status_name) VALUES
+("Open"),
+("In Progress"),
+("Closed");
+
 INSERT INTO `rooms` (`room_name`) VALUES
 ('A0.01'),
 ('A0.02'),
