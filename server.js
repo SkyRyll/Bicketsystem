@@ -182,6 +182,24 @@ function get_error(req, res, errorMessage) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+app.get("/api/getAllRooms", (req, res) => {
+    const query = "SELECT * FROM rooms";
+    connection.query(query, function (error, results, fields) {
+        if (error) throw error;
+
+        res.json(results);
+    });
+});
+
+app.get("/api/getAllTickets", (req, res) => {
+    const query = "SELECT * FROM tickets";
+    connection.query(query, function (error, results, fields) {
+        if (error) throw error;
+
+        res.json(results);
+    });
+});
+
 //login check and redirect
 app.post(
     "/login",

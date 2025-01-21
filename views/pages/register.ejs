@@ -32,12 +32,15 @@
                     <input type="text" placeholder="House number" name="house_number" required />
                     <input type="text" placeholder="ZIP Code" name="zip_code" required />
                     <input type="text" placeholder="City" name="city" required />
-                    <select name="role" required>
+                    <select name="role" id="role-select" required>
                         <option value="" disabled selected>Select role</option>
                         <option value="teacher">Teacher</option>
                         <option value="room_attendant">Room Attendant</option>
                     </select>
-
+                    <div class="room-selector" id="room-selector" style="display: none">
+                        <p>Select all rooms you are attending</p>
+                        <div class="checkbox-container" id="checkbox-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px"></div>
+                    </div>
                     <button>create account</button>
                     <p class="message">Already registered? <a href="/login">Sign In</a></p>
                 </form>
