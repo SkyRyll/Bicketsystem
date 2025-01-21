@@ -90,7 +90,7 @@ function get_account(req, res) {
     if (req.session.loggedin) {
         show_account(req, res, req.session.userID);
     } else {
-        get_login(req, res);
+        res.redirect("/login");
     }
 }
 
@@ -122,7 +122,7 @@ function show_account(req, res, user_id) {
 }
 
 function getRoleFromID(role_id, callback) {
-    const roleQuery = "SELECT role_type FROM roles WHERE role_id = ?";
+    const roleQuery = "SELECT * FROM roles WHERE role_id = ?";
     connection.query(roleQuery, [role_id], function (error, results) {
         if (error) throw error;
 
@@ -169,7 +169,7 @@ function do_logout(req, res) {
     req.session.password = null;
     req.session.loggedin = false;
 
-    get_index(req, res);
+    res.redirect("/");
 }
 
 function get_error(req, res, errorMessage) {
@@ -222,7 +222,7 @@ app.post(
                             req.session.userID = results[0].account_id;
 
                             // Render home page
-                            get_account(req, res);
+                            res.redirect("/account");
                         } else {
                             // Passwords do not match, deny access
                             get_error(req, res, "Login failed. Incorrect password.");
