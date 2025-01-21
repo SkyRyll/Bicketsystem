@@ -56,7 +56,11 @@ connection.connect(function (error) {
 
 // route pages
 app.get("/", (req, res) => {
-    get_index(req, res);
+    res.redirect("/ticketOverview");
+});
+
+app.get("/ticketOverview", (req, res) => {
+    get_ticketOverview(req, res);
 });
 
 app.get("/account", (req, res) => {
@@ -79,8 +83,8 @@ app.get("/error", (req, res) => {
     get_error(req, res);
 });
 
-function get_index(req, res) {
-    res.render("pages/index", {
+function get_ticketOverview(req, res) {
+    res.render("pages/ticketOverview", {
         loggedin: req.session.loggedin,
     });
 }
@@ -95,8 +99,8 @@ function get_account(req, res) {
 }
 
 function show_account(req, res, user_id) {
-    const query = "SELECT * FROM accounts WHERE account_id = ?";
-    connection.query(query, [user_id], function (error, results, fields) {
+    const getAccountDetailsQuery = "SELECT * FROM accounts WHERE account_id = ?";
+    connection.query(getAccountDetailsQuery, [user_id], function (error, results, fields) {
         if (error) throw error;
 
         if (results.length > 0) {
@@ -122,8 +126,8 @@ function show_account(req, res, user_id) {
 }
 
 function getRoleFromID(role_id, callback) {
-    const roleQuery = "SELECT * FROM roles WHERE role_id = ?";
-    connection.query(roleQuery, [role_id], function (error, results) {
+    const getRoleDetailsQuery = "SELECT * FROM roles WHERE role_id = ?";
+    connection.query(getRoleDetailsQuery, [role_id], function (error, results) {
         if (error) throw error;
 
         const role = results.length > 0 ? results[0] : null;
@@ -183,8 +187,8 @@ function get_error(req, res, errorMessage) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 app.get("/api/getAllRooms", (req, res) => {
-    const query = "SELECT * FROM rooms";
-    connection.query(query, function (error, results, fields) {
+    const getRoomsQuery = "SELECT * FROM rooms";
+    connection.query(getRoomsQuery, function (error, results, fields) {
         if (error) throw error;
 
         res.json(results);
@@ -192,8 +196,8 @@ app.get("/api/getAllRooms", (req, res) => {
 });
 
 app.get("/api/getAllTickets", (req, res) => {
-    const query = "SELECT * FROM tickets";
-    connection.query(query, function (error, results, fields) {
+    const getTicketsQuery = "SELECT * FROM tickets";
+    connection.query(getTicketsQuery, function (error, results, fields) {
         if (error) throw error;
 
         res.json(results);
@@ -219,8 +223,8 @@ app.post(
             const salt = generateSalt(password);
 
             // Retrieve 'hash' and 'salt' from the database based on the username
-            const query = "SELECT * FROM accounts WHERE email = ?";
-            connection.query(query, [email], function (error, results, fields) {
+            const getAccountFromEmailQuery = "SELECT * FROM accounts WHERE email = ?";
+            connection.query(getAccountFromEmailQuery, [email], function (error, results, fields) {
                 if (error) {
                     get_error(req, res, "Login failed. Please try again.");
                 }
@@ -268,7 +272,6 @@ app.post(
         check("city").trim().isLength({ min: 1 }).escape(),
         check("role").trim().isIn(["teacher", "room_attendant"]).withMessage("Role must be either teacher or room attendant"),
         check("password").custom((value) => {
-            // Use a regular expression to validate the password
             const passwordRegex = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])(?=.{8,})/;
             if (!passwordRegex.test(value)) {
                 get_error(req, res, "Password must have at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.");
@@ -292,40 +295,77 @@ app.post(
             var zip_code = req.body.zip_code;
             var city = req.body.city;
             var role_id = req.body.role === "teacher" ? 1 : 2;
+            var selectedRooms = req.body.rooms || [];
             const salt = generateSalt(password);
 
             bcrypt.hash(password, salt, function (err, hash) {
                 if (err) {
-                    // Error while hashing, user won't be created
                     get_error(req, res, "Error while trying to create user. Please try again.");
                 }
 
-                const query = "SELECT * FROM accounts WHERE email = ?";
-                connection.query(query, [email], function (error, results, fields) {
-                    // If there is an issue with the query, output the error
-                    if (error) throw error;
-                    // If the account exists
-                    if (results.length > 0) {
-                        // User already exists, skip registration
-                        get_error(req, res, "This email is already in use.");
-                    } else {
-                        const query = `
-                                    INSERT INTO accounts (
-                                        email, first_name, last_name, hash,
-                                        street, house_number, zip_code, city, role_id
-                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                                `;
-                        connection.query(query, [email, first_name, last_name, hash, street, house_number, zip_code, city, role_id], function (error, results, fields) {
-                            // If there is an issue with the query, output the error
-                            if (error) throw error;
-                            // Account added
-                            req.session.loggedin = true;
-                            req.session.userID = results.insertId;
+                connection.beginTransaction(function (err) {
+                    if (err) throw err;
 
-                            // Redirect to account page
-                            res.redirect("/account");
-                        });
-                    }
+                    const getAccountFromEmailQuery = "SELECT * FROM accounts WHERE email = ?";
+                    connection.query(getAccountFromEmailQuery, [email], function (error, results) {
+                        if (error)
+                            return connection.rollback(() => {
+                                throw error;
+                            });
+
+                        if (results.length > 0) {
+                            get_error(req, res, "This email is already in use.");
+                        } else {
+                            const postAccountQuery = `
+                                INSERT INTO accounts (
+                                    email, first_name, last_name, hash,
+                                    street, house_number, zip_code, city, role_id
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            `;
+                            connection.query(postAccountQuery, [email, first_name, last_name, hash, street, house_number, zip_code, city, role_id], function (error, results) {
+                                if (error)
+                                    return connection.rollback(() => {
+                                        throw error;
+                                    });
+
+                                const userId = results.insertId;
+
+                                if (selectedRooms.length > 0) {
+                                    const roomValues = selectedRooms.map((roomId) => [userId, roomId]);
+                                    const postRoomsQuery = "INSERT INTO account_rooms (account_id, room_id) VALUES ?";
+                                    connection.query(postRoomsQuery, [roomValues], function (error) {
+                                        if (error)
+                                            return connection.rollback(() => {
+                                                throw error;
+                                            });
+
+                                        connection.commit(function (err) {
+                                            if (err)
+                                                return connection.rollback(() => {
+                                                    throw err;
+                                                });
+
+                                            req.session.loggedin = true;
+                                            req.session.userID = userId;
+                                            res.redirect("/account");
+                                        });
+                                    });
+                                } else {
+                                    // Commit if no rooms are selected
+                                    connection.commit(function (err) {
+                                        if (err)
+                                            return connection.rollback(() => {
+                                                throw err;
+                                            });
+
+                                        req.session.loggedin = true;
+                                        req.session.userID = userId;
+                                        res.redirect("/account");
+                                    });
+                                }
+                            });
+                        }
+                    });
                 });
             });
         }

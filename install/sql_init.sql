@@ -31,13 +31,28 @@ CREATE TABLE `tickets` (
   `creation_date` datetime,
   `ticket_title` varchar(256),
   `ticket_description` varchar(2048),
-  `ticket_status` integer
+  `status_id` integer
 );
 
-ALTER TABLE `tickets` ADD FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`);
+CREATE TABLE `account_rooms` (
+  `account_id` integer,
+  `room_id` integer
+);
+
+CREATE TABLE `status` (
+  `status_id` integer PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `status_name` varchar(256)
+);
 
 ALTER TABLE `accounts` ADD FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`);
 
+ALTER TABLE `account_rooms` ADD FOREIGN KEY (`account_id`) REFERENCES `accounts` (`account_id`);
+
+ALTER TABLE `account_rooms` ADD FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`);
+
+ALTER TABLE `tickets` ADD FOREIGN KEY (`ticket_id`) REFERENCES `rooms` (`room_id`);
+
+ALTER TABLE `tickets` ADD FOREIGN KEY (`status_id`) REFERENCES `status` (`status_id`);
 
 INSERT INTO `roles` (role_type) VALUES
 ("Teacher"),
