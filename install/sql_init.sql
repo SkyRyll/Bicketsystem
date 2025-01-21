@@ -28,6 +28,7 @@ CREATE TABLE `rooms` (
 CREATE TABLE `tickets` (
   `ticket_id` integer PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `room_id` integer,
+  `account_id` integer,
   `creation_date` datetime,
   `ticket_title` varchar(256),
   `ticket_description` varchar(2048),
@@ -53,6 +54,9 @@ ALTER TABLE `account_rooms` ADD FOREIGN KEY (`room_id`) REFERENCES `rooms` (`roo
 ALTER TABLE `tickets` ADD FOREIGN KEY (`ticket_id`) REFERENCES `rooms` (`room_id`);
 
 ALTER TABLE `tickets` ADD FOREIGN KEY (`status_id`) REFERENCES `status` (`status_id`);
+
+ALTER TABLE `tickets` ADD FOREIGN KEY (`account_id`) REFERENCES `accounts` (`account_id`);
+
 
 INSERT INTO `roles` (role_type) VALUES
 ("Teacher"),
