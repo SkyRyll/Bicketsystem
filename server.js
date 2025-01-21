@@ -198,6 +198,16 @@ app.get("/api/getAllRooms", (req, res) => {
     });
 });
 
+app.get("/api/getTicketsByUserID", (req, res) => {
+    const userID = req.session.userID;
+    const getTicketsQuery = "SELECT * FROM tickets WHERE account_id = ? ORDER BY creation_date DESC";
+    connection.query(getTicketsQuery, [userID], function (error, results, fields) {
+        if (error) throw error;
+
+        res.json(results);
+    });
+});
+
 app.get("/api/getAllTickets", (req, res) => {
     const getTicketsQuery = "SELECT * FROM tickets";
     connection.query(getTicketsQuery, function (error, results, fields) {

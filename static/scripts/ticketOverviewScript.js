@@ -48,7 +48,6 @@ function loadRooms() {
         })
         .catch((error) => console.error("Error fetching rooms:", error));
 }
-
 // Handle form submission
 const ticketForm = document.getElementById("ticketForm");
 ticketForm.onsubmit = async function (event) {
@@ -89,6 +88,7 @@ ticketForm.onsubmit = async function (event) {
             modal.style.display = "none";
             ticketForm.reset();
             alert("Ticket created successfully!");
+            fetchTickets();
         } else {
             alert("Failed to create ticket. Please try again.");
         }
@@ -103,7 +103,7 @@ let allTickets = []; // Array to hold all tickets
 
 // Function to fetch tickets from the API
 function fetchTickets() {
-    const apiUrl = "http://localhost:3000/api/getAllTickets";
+    const apiUrl = "http://localhost:3000/api/getTicketsByUserID";
 
     // Fetch request to the API
     fetch(apiUrl)
