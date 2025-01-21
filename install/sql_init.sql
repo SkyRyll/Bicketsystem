@@ -1,46 +1,48 @@
-DROP DATABASE IF EXISTS bicket;
 CREATE DATABASE IF NOT EXISTS bicket;
 USE bicket;
 
-CREATE TABLE accounts (
-  account_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
-  role_id INT,
-  email VARCHAR(256),
-  first_name VARCHAR(256),
-  last_name VARCHAR(256),
-  street VARCHAR(256),
-  house_number VARCHAR(256),
-  zip_code INT,
-  city VARCHAR(256),
-  hash VARCHAR(256),
-  FOREIGN KEY (role_id) REFERENCES roles (role_id)
+CREATE TABLE `accounts` (
+  `account_id` integer PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `role_id` integer,
+  `email` varchar(256),
+  `first_name` varchar(256),
+  `last_name` varchar(256),
+  `street` varchar(256),
+  `house_number` varchar(256),
+  `zip_code` integer,
+  `city` varchar(256),
+  `hash` varchar(256)
 );
 
-CREATE TABLE roles (
-  role_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
-  role_type VARCHAR(256)
+CREATE TABLE `roles` (
+  `role_id` integer PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `role_type` varchar(256)
 );
 
-CREATE TABLE rooms (
-  room_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
-  room_name VARCHAR(8)
+CREATE TABLE `rooms` (
+  `room_id` integer PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `room_name` varchar(256)
 );
 
-CREATE TABLE tickets (
-  ticket_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
-  room_id INT,
-  creation_date DATETIME,
-  ticket_title VARCHAR(256),
-  ticket_description VARCHAR(2048),
-  ticket_status INT,
-  FOREIGN KEY (room_id) REFERENCES rooms (room_id)
+CREATE TABLE `tickets` (
+  `ticket_id` integer PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `room_id` integer,
+  `creation_date` datetime,
+  `ticket_title` varchar(256),
+  `ticket_description` varchar(2048),
+  `ticket_status` integer
 );
 
-INSERT INTO roles (role_type) VALUES
-('Teacher'),
-('Room attendant');
+ALTER TABLE `tickets` ADD FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`);
 
-INSERT INTO rooms (room_name) VALUES
+ALTER TABLE `accounts` ADD FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`);
+
+
+INSERT INTO `roles` (role_type) VALUES
+("Teacher"),
+("Room attendant");
+
+INSERT INTO `rooms` (`room_name`) VALUES
 ('A0.01'),
 ('A0.02'),
 ('A0.03'),
