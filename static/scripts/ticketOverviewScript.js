@@ -167,11 +167,11 @@ function displayTickets(tickets) {
             statusCell.textContent = "Open";
             statusCell.classList.add("status-open"); // Add the "status-open" class
         } else if (ticket.status_id === 2) {
-            statusCell.textContent = "Closed";
-            statusCell.classList.add("status-closed"); // Add the "status-closed" class
-        } else {
             statusCell.textContent = "In Progress";
-            statusCell.classList.add("status-in-progress"); // Add the "status-in-progress" class
+            statusCell.classList.add("status-in-progress"); // Add the "status-closed" class
+        } else {
+            statusCell.textContent = "Closed";
+            statusCell.classList.add("status-closed"); // Add the "status-in-progress" class
         }
 
         // Append the status cell to the row
