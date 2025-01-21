@@ -59,7 +59,7 @@ connection.connect(function (error) {
 
 // route pages
 app.get("/", (req, res) => {
-    res.redirect("/ticketOverview");
+    get_index(req, res);
 });
 
 app.get("/ticketOverview", (req, res) => {
@@ -85,6 +85,12 @@ app.get("/logout", (req, res) => {
 app.get("/error", (req, res) => {
     get_error(req, res);
 });
+
+function get_index(req,res){
+    res.render("pages/index", {
+        loggedin: req.session.loggedin,
+    });
+}
 
 function get_ticketOverview(req, res) {
     res.render("pages/ticketOverview", {

@@ -6,15 +6,18 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
-                <a class="nav-link" href="/ticketOverview">TICKET OVERVIEW</a>
+                <a class="nav-link" href="/">HOME</a>
             </li>
             <% if (loggedin) { %>
-            <li class="nav-item">
-                <a class="nav-link" href="/account">ACCOUNT</a>
-            </li>
-            <li>
-                <a class="nav-link" href="/logout">LOGOUT</a>
-            </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/ticketOverview">TICKET OVERVIEW</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/account">ACCOUNT</a>
+                </li>
+                <li>
+                    <a class="nav-link" href="/logout">LOGOUT</a>
+                </li>
             <% } else { %>
             <li>
                 <a class="nav-link" href="/login">LOGIN</a>
