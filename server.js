@@ -8,7 +8,6 @@ const encoder = bodyParser.urlencoded();
 const bcrypt = require("bcrypt");
 const { check, validationResult } = require("express-validator");
 const rateLimit = require("express-rate-limit");
-const e = require("express");
 
 //VARIABLES
 const dbHost = "localhost";
