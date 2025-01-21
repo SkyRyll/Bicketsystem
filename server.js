@@ -66,6 +66,10 @@ app.get("/ticketOverview", (req, res) => {
     get_ticketOverview(req, res);
 });
 
+app.get("/ticketEditor", (req, res) => {
+    get_ticketEditor(req, res, req.session.userID);
+});
+
 app.get("/account", (req, res) => {
     get_account(req, res);
 });
@@ -86,7 +90,7 @@ app.get("/error", (req, res) => {
     get_error(req, res);
 });
 
-function get_index(req,res){
+function get_index(req, res) {
     res.render("pages/index", {
         loggedin: req.session.loggedin,
     });
@@ -95,6 +99,27 @@ function get_index(req,res){
 function get_ticketOverview(req, res) {
     res.render("pages/ticketOverview", {
         loggedin: req.session.loggedin,
+    });
+}
+
+function get_ticketEditor(req, res, user_id) {
+    const getAccountDetailsQuery = "SELECT * FROM accounts WHERE account_id = ?";
+    connection.query(getAccountDetailsQuery, [user_id], function (error, results) {
+        if (error) throw error;
+
+        if (results.length > 0) {
+            // User found
+            const user = results[0];
+            delete user.hash;
+
+            res.render("pages/ticketEditor", {
+                user: user,
+                loggedin: req.session.loggedin,
+            });
+        } else {
+            // Invalid userID
+            get_error(req, res, "No User was found");
+        }
     });
 }
 
@@ -223,6 +248,24 @@ app.get("/api/getAllTickets", (req, res) => {
     });
 });
 
+app.get("/api/getTicketsByRoomAndUserID", (req, res) => {
+    const userID = req.session.userID;
+    const getTicketsQuery = `
+    SELECT *
+    FROM tickets
+    WHERE room_id IN (
+        SELECT room_id
+        FROM account_rooms
+        WHERE account_id = ?
+    );
+    `;
+    connection.query(getTicketsQuery, [userID], function (error, results, fields) {
+        if (error) throw error;
+
+        res.json(results);
+    });
+});
+
 app.get("/api/getSessionUser", (req, res) => {
     // Replace with your session management logic
     if (req.session && req.session.userID) {
@@ -249,6 +292,24 @@ app.post("/api/createTicket", async (req, res) => {
             throw error;
         } else {
             res.status(201).json({ message: "Ticket created successfully." });
+        }
+    });
+});
+
+app.put("/api/updateTicketStatus/:ticketId", async (req, res) => {
+    const { ticketId } = req.params;
+    const { status_id } = req.body;
+
+    if (!status_id) {
+        return res.status(400).json({ error: "Status ID is required." });
+    }
+
+    const query = `UPDATE tickets SET status_id = ? WHERE ticket_id = ?`;
+    connection.query(query, [status_id, ticketId], function (error, results, fields) {
+        if (error) {
+            throw error;
+        } else {
+            res.status(200).json({ message: "Ticket status updated successfully." });
         }
     });
 });

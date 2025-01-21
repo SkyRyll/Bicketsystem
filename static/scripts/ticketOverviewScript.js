@@ -195,9 +195,7 @@ function filterTickets() {
         let isMatch = true;
 
         // Filter by title
-        const ticketTitle = (ticket.ticket_title || "").trim().toLowerCase(); // Handle undefined/null ticket_title
-        console.log("ticketTitleInput:", searchbarInput);
-        console.log("ticketTitle:", ticketTitle);
+        const ticketTitle = (ticket.ticket_title || "").trim().toLowerCase();
         if (searchbarInput && !ticketTitle.includes(searchbarInput)) {
             isMatch = false;
         }

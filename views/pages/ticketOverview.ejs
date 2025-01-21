@@ -9,6 +9,7 @@
         <link rel="stylesheet" type="text/css" href="/css/style.css" />
         <link rel="stylesheet" type="text/css" href="/css/navbar.css" />
         <link rel="stylesheet" type="text/css" href="/css/ticketOverview.css" />
+        <link rel="stylesheet" type="text/css" href="/css/ticketTable.css" />
 
         <!-- JS Files -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -18,7 +19,7 @@
         <title>Ticketsystem: Overview</title>
     </head>
     <body>
-        <%- include('../components/navbar'); %> <% if (loggedin) { %>
+        <%- include('../components/navbar'); %>
         <div id="ticketModal" class="modal">
             <div class="modal-content">
                 <span class="close" id="closeModalBtn">&times;</span>
@@ -37,7 +38,6 @@
                 </form>
             </div>
         </div>
-        <% } %>
         <div class="container mt-4">
             <button class="mb-4" id="openModalBtn">Create New Ticket</button>
             <h4>Filter Tickets</h4>

@@ -9,15 +9,18 @@
                 <a class="nav-link" href="/">HOME</a>
             </li>
             <% if (loggedin) { %>
-                <li class="nav-item">
-                    <a class="nav-link" href="/ticketOverview">TICKET OVERVIEW</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/account">ACCOUNT</a>
-                </li>
-                <li>
-                    <a class="nav-link" href="/logout">LOGOUT</a>
-                </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/ticketOverview">MY TICKETS</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/ticketEditor">TICKET EDITOR</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/account">ACCOUNT</a>
+            </li>
+            <li>
+                <a class="nav-link" href="/logout">LOGOUT</a>
+            </li>
             <% } else { %>
             <li>
                 <a class="nav-link" href="/login">LOGIN</a>
