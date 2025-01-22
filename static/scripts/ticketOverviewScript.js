@@ -103,7 +103,7 @@ let allTickets = []; // Array to hold all tickets
 
 // Function to fetch tickets from the API
 function fetchTickets() {
-    const apiUrl = "http://localhost:3000/api/getTicketsByUserID";
+    const apiUrl = "/api/getTicketsByUserID";
 
     // Fetch request to the API
     fetch(apiUrl)
